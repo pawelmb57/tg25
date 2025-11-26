@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.7, minimum-scale=0.7, viewport-fit=cover" />
+  <title>Thanksgiving Control – All Days & Recipes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"SF Pro Display"', 'system-ui', 'sans-serif'],
+            mono: ['"SFMono-Regular"', 'monospace'],
+          },
+          colors: {
+            bg: '#0f172a',
+            panel: '#1e293b',
+            accent: '#eab308',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar for webkit */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    
+    /* Hide scrollbar for nav but keep functionality */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Fallback styles when the Tailwind CDN fails to load (offline / CSP) */
+    html.no-tailwind body {
+      margin: 0;
+      background: #0f172a;
+      color: #cbd5e1;
+      font-family: "SF Pro Display", system-ui, -apple-system, sans-serif;
+      padding-bottom: 6rem;
+    }
+    html.no-tailwind main {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    html.no-tailwind a { color: #38bdf8; text-decoration: none; }
+    html.no-tailwind h1, html.no-tailwind h2, html.no-tailwind h3 {
+      margin: 0 0 0.35rem;
+      color: #fff;
+      font-weight: 700;
+    }
+    html.no-tailwind p { margin: 0; color: #94a3b8; }
+    html.no-tailwind section {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    }
+    html.no-tailwind .section-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    html.no-tailwind .section-tags a {
+      background: #1f2937;
+      border: 1px solid #334155;
+      color: #38bdf8;
+      padding: 0.35rem 0.65rem;
+      border-radius: 0.65rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    html.no-tailwind .schedule-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    html.no-tailwind .col-span-full {
+      grid-column: 1 / -1;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 0.4rem;
+      margin-top: 0.6rem;
+      margin-bottom: 0.4rem;
+    }
+    html.no-tailwind .col-span-full h3 {
+      color: #eab308;
+      letter-spacing: 0.12em;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+    }
+    html.no-tailwind .task-card {
+      background: #0b1220;
+      border: 1px solid #334155;
+      border-left: 4px solid #38bdf8;
+      border-radius: 0.85rem;
+      padding: 1rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+    html.no-tailwind .task-card[data-action="prep"] { border-left-color: #22c55e; }
+    html.no-tailwind .task-card[data-action="oven"] { border-left-color: #f97316; }
+    html.no-tailwind .task-card[data-action="stove"] { border-left-color: #eab308; }
+    html.no-tailwind .task-card[data-action="finish"] { border-left-color: #a855f7; }
+    html.no-tailwind .task-card > div:first-child {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.35rem;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.08em;
+    }
+    html.no-tailwind .task-card > div:first-child span:last-child {
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 0.12rem 0.5rem;
+      border-radius: 0.65rem;
+    }
+    html.no-tailwind .task-card[data-action="prep"] > div:first-child span:last-child {
+      background: rgba(34, 197, 94, 0.12);
+      color: #22c55e;
+      border-color: rgba(34, 197, 94, 0.25);
+    }
+    html.no-tailwind .task-card[data-action="oven"] > div:first-child span:last-child {
+      background: rgba(249, 115, 22, 0.12);
+      color: #f97316;
+      border-color: rgba(249, 115, 22, 0.25);
+    }
+    html.no-tailwind .task-card[data-action="stove"] > div:first-child span:last-child {
+      background: rgba(234, 179, 8, 0.12);
+      color: #eab308;
+      border-color: rgba(234, 179, 8, 0.25);
+    }
+    html.no-tailwind .task-card[data-action="finish"] > div:first-child span:last-child {
+      background: rgba(168, 85, 247, 0.12);
+      color: #a855f7;
+      border-color: rgba(168, 85, 247, 0.25);
+    }
+    html.no-tailwind .task-card .font-bold { font-size: 1rem; color: #fff; display: block; margin-bottom: 0.35rem; }
+    html.no-tailwind .task-card p { font-size: 0.92rem; line-height: 1.35; }
+    html.no-tailwind ul {
+      margin: 0.25rem 0 0;
+      padding-left: 1.1rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+    html.no-tailwind ul li { margin-bottom: 0.35rem; }
+    html.no-tailwind .footer-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 5rem;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0 1rem;
+      z-index: 50;
+    }
+    html.no-tailwind .filter-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.85rem 1rem;
+      background: #1f2937;
+      border: 1px solid #334155;
+      border-radius: 0.9rem;
+      color: #e2e8f0;
+      font-weight: 700;
+      min-width: 110px;
+    }
+    html.no-tailwind .dropdown {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 6.25rem;
+      width: 90%;
+      max-width: 24rem;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 1rem;
+      padding: 0.75rem;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      z-index: 60;
+    }
+    html.no-tailwind .dropdown.hidden { display: none; }
+    html.no-tailwind .dropdown h4 { margin: 0 0 0.5rem; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+    html.no-tailwind .dropdown .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+    html.no-tailwind .dropdown .option {
+      text-align: center;
+      padding: 0.55rem 0.75rem;
+      border-radius: 0.75rem;
+      border: 1px solid #334155;
+      background: #1f2937;
+      color: #e2e8f0;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    html.no-tailwind .dropdown .option.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+  </style>
+  <script>
+    // Detect if Tailwind CDN failed (common on mobile file viewers) and enable fallback CSS
+    document.addEventListener("DOMContentLoaded", () => {
+      const probe = document.createElement("div");
+      probe.className = "hidden";
+      document.body.appendChild(probe);
+      const hasTailwind = window.getComputedStyle(probe).display === "none";
+      probe.remove();
+      if (!hasTailwind) {
+        document.documentElement.classList.add("no-tailwind");
+      }
+    });
+  </script>
+</head>
+<body class="bg-bg text-slate-200 antialiased pb-24 selection:bg-sky-500/30">
+
+  <main class="max-w-6xl mx-auto p-4 space-y-8">
+    
+    <section id="tuesday" class="bg-panel border border-slate-700 rounded-xl p-5 md:p-8 shadow-2xl">
+      <h1 class="text-3xl font-bold text-white mb-2">Tuesday (T-3) – Primary Sous Vide Day</h1>
+      <p class="text-slate-400 mb-6">Sous vide batches + prep staging with immediate chilling for safety.</p>
+
+      <div class="section-tags flex flex-wrap gap-2 mb-8">
+        <a href="#sweet-potatoes" class="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-sm text-sky-400 font-medium transition-colors">Coconut–Ginger Sweet Potatoes</a>
+        <a href="#seven-veg" class="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-sm text-sky-400 font-medium transition-colors">Seven-Veg Orchestra</a>
+        <a href="#mashed-potatoes" class="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-sm text-sky-400 font-medium transition-colors">Mashed Potatoes</a>
+        <a href="#herb-butter" class="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-sm text-sky-400 font-medium transition-colors">Herb Butter Kit</a>
+      </div>
+
+      <div class="schedule-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-day="tuesday">
+        
+        <div class="col-span-full mt-2 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Sous Vide Prep</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="general">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Setup</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Heat Bath</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">All sous vide items</div>
+          <p class="text-sm text-slate-400 leading-snug">Preheat immersion circulator to <strong class="text-white">185°F (85°C)</strong>; stage a large <strong class="text-white">ice bath</strong> for rapid chilling.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Peel & Cut</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="sweet-potatoes">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Vegetables</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Prep</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Sweet Potatoes (3 lb)</div>
+          <p class="text-sm text-slate-400 leading-snug">Peel and cut into <strong class="text-white">1.5-inch chunks</strong>.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="mashed-potatoes">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Vegetables</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Prep</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Mashed Potatoes (8 lb)</div>
+          <p class="text-sm text-slate-400 leading-snug">Peel and cut into even chunks; rinse. Store raw covered in cold water.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="seven-veg">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Vegetables</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Prep</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Seven-Veg (Group A)</div>
+          <p class="text-sm text-slate-400 leading-snug">Peel/cut carrots, parsnips, turnips into <strong>1/2-inch pieces</strong>.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="seven-veg">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Vegetables</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Prep</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Seven-Veg (Group B)</div>
+          <p class="text-sm text-slate-400 leading-snug">Cut squash/fennel into <strong>1/2-inch pieces</strong>.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="seven-veg">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Fresh Hold</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Wash & Cut</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Onions, Radishes</div>
+          <p class="text-sm text-slate-400 leading-snug">Cut onions into wedges; radishes halved. Hold raw in airtight containers.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Bag & Seal</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="sweet-potatoes">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Sous Vide</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Bag</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Sweet Potatoes</div>
+          <p class="text-sm text-slate-400 leading-snug">Season with <strong>1/2 tsp salt</strong> + oil; optional ginger slices. Seal.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="seven-veg">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Sous Vide</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Bag</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Seven-Veg (Group B)</div>
+          <p class="text-sm text-slate-400 leading-snug">Season with <strong>1 tsp olive oil + 1/2 tsp salt</strong>. Seal.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="seven-veg">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Sous Vide</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Bag</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Seven-Veg (Group A)</div>
+          <p class="text-sm text-slate-400 leading-snug">Season with <strong>1 tsp olive oil + 1/2 tsp salt</strong>; optional thyme. Seal.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Cook</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="sweet-potatoes">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Sous Vide</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Cook Load 1</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Sweet Potatoes</div>
+          <p class="text-sm text-slate-400 leading-snug"><strong>185°F for 90 min</strong>.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="seven-veg">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Sous Vide</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Cook Load 2</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Seven-Veg (Group B)</div>
+          <p class="text-sm text-slate-400 leading-snug"><strong>185°F for 45–60 min</strong> (staggered).</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="seven-veg">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Sous Vide</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Cook Load 3</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Seven-Veg (Group A)</div>
+          <p class="text-sm text-slate-400 leading-snug"><strong>185°F for 60–75 min</strong> (staggered).</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Chill & Store</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="general">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Safety</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Ice Bath</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">All sous vide bags</div>
+          <p class="text-sm text-slate-400 leading-snug">Chill in <strong>ice bath 20–30 mins</strong>; dry exterior and refrigerate.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="mashed-potatoes">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Hold</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Store Raw</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Mashed Potatoes</div>
+          <p class="text-sm text-slate-400 leading-snug">Keep chunks covered in cold water or sealed airtight.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="wednesday" class="bg-panel border border-slate-700 rounded-xl p-5 md:p-8 shadow-2xl">
+      <h1 class="text-3xl font-bold text-white mb-2">Wednesday (T-2) – Breakdown & Sides</h1>
+      <p class="text-slate-400 mb-6">Turkey breakdown, stuffing build, gravy base, and cranberries.</p>
+
+      <div class="schedule-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-day="wednesday">
+
+        <div class="col-span-full mt-2 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Setup</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-orange-500 shadow-lg" data-action="oven" data-dishes="stuffing">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Oven</span>
+            <span class="bg-orange-500/10 text-orange-400 text-xs px-2 py-1 rounded font-bold border border-orange-500/20">Preheat</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Stuffing mushrooms</div>
+          <p class="text-sm text-slate-400">Preheat oven to <strong>425°F</strong>.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Sous Vide 1</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Set Up</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Turkey A breasts</div>
+          <p class="text-sm text-slate-400">Preheat bath to <strong>145–150°F</strong>.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Sous Vide 2</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Set Up</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">All dark meat</div>
+          <p class="text-sm text-slate-400">Preheat bath to <strong>155°F</strong>.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Stuffing Prep</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-orange-500 shadow-lg" data-action="oven" data-dishes="stuffing">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Mushrooms</span>
+            <span class="bg-orange-500/10 text-orange-400 text-xs px-2 py-1 rounded font-bold border border-orange-500/20">Roast</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Stuffing</div>
+          <p class="text-sm text-slate-400">Roast <strong>1.5–2 lbs</strong> sliced mushrooms at <strong>425°F for 20–25 min</strong>.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-yellow-500 shadow-lg" data-action="stove" data-dishes="stuffing">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Base</span>
+            <span class="bg-yellow-500/10 text-yellow-400 text-xs px-2 py-1 rounded font-bold border border-yellow-500/20">Sauté</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Stuffing</div>
+          <p class="text-sm text-slate-400">Sauté onions/celery; fold in roasted mushrooms.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="stuffing">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Assemble</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Hydrate</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Stuffing</div>
+          <p class="text-sm text-slate-400">Hydrate bread with 3.5–4.5 cups warm broth; mix, do <strong>not</strong> bake; refrigerate.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Turkey Breakdown</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Butchery</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Break Down</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Turkey A & B</div>
+          <p class="text-sm text-slate-400">Remove all legs/thighs. Remove Turkey A breasts. Save frames.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Turkey A</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Sous Vide</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">White meat</div>
+          <p class="text-sm text-slate-400">Cook <strong>145–150°F for 2–3 hrs</strong>. Ice bath, refrigerate sealed.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Turkey B</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Brine</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Showpiece</div>
+          <p class="text-sm text-slate-400">Spatchcock; dry brine with kosher salt; leave uncovered in fridge.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Sides & Sauces</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="herb-butter">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Mix</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Combine</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Herb Butters</div>
+          <p class="text-sm text-slate-400">Make Turkey & Finishing compound butters; refrigerate.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-yellow-500 shadow-lg" data-action="stove" data-dishes="mashed-potatoes">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Boil & Mash</span>
+            <span class="bg-yellow-500/10 text-yellow-400 text-xs px-2 py-1 rounded font-bold border border-yellow-500/20">Cook</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Mashed Potatoes</div>
+          <p class="text-sm text-slate-400">Boil 15-20 min. Mash with butter/cream/sour cream; refrigerate.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-yellow-500 shadow-lg" data-action="stove" data-dishes="gravy">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Roux</span>
+            <span class="bg-yellow-500/10 text-yellow-400 text-xs px-2 py-1 rounded font-bold border border-yellow-500/20">Make Base</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Gravy</div>
+          <p class="text-sm text-slate-400">Make roux; whisk in stock + OJ + zest; chill.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-yellow-500 shadow-lg" data-action="stove" data-dishes="cranberry-compote">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Compote</span>
+            <span class="bg-yellow-500/10 text-yellow-400 text-xs px-2 py-1 rounded font-bold border border-yellow-500/20">Make</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Cranberry–Onion</div>
+          <p class="text-sm text-slate-400">Caramelize onion; cook with berries until jammy.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-yellow-500 shadow-lg" data-action="stove" data-dishes="jellied-cranberry">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Jellied</span>
+            <span class="bg-yellow-500/10 text-yellow-400 text-xs px-2 py-1 rounded font-bold border border-yellow-500/20">Prep</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Fancy Sauce</div>
+          <p class="text-sm text-slate-400">Bloom gelatin; cook berries; mix and pour into mold. Chill 12h.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Dark Meat (Late Night)</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Cook</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Overnight</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Legs & Thighs</div>
+          <p class="text-sm text-slate-400">Start sous vide at <strong>155°F for 12–16 hrs</strong>.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="thursday" class="bg-panel border border-slate-700 rounded-xl p-5 md:p-8 shadow-2xl">
+      <h1 class="text-3xl font-bold text-white mb-2">Thursday (T-1) – Chill & Salad</h1>
+      <p class="text-slate-400 mb-6">Light day: finish dark meat chill, keep brine going, prep cold salad.</p>
+
+      <div class="schedule-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-day="thursday">
+
+        <div class="col-span-full mt-2 mb-1 border-b border-slate-700 pb-2">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Tasks</h3>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Turkey Dark Meat</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Finish SV</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Legs & Thighs</div>
+          <p class="text-sm text-slate-400">End cook. <strong>Ice bath 30 min</strong>; refrigerate sealed.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Turkey B</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Brine</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Showpiece</div>
+          <p class="text-sm text-slate-400">Dry brine continues (uncovered) for crisp skin.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="fennel-salad">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Salad Prep</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Prep</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Shaved Fennel</div>
+          <p class="text-sm text-slate-400">Shave fennel, slice radishes, tear mint. Store separately (damp towel for mint).</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="general">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Check</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Monitor</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">All Sides</div>
+          <p class="text-sm text-slate-400">Ensure Jellied Cranberry is chilling. Keep all bags cold.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="friday" class="bg-panel border border-slate-700 rounded-xl p-5 md:p-8 shadow-2xl">
+      <h1 class="text-3xl font-bold text-white mb-2">Friday – Thanksgiving Day</h1>
+      <p class="text-slate-400 mb-6">Three phases: Staging, Active Cooking, Golden Oven Window.</p>
+
+      <div class="schedule-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-day="friday">
+        
+        <div class="col-span-full mt-2 mb-1 border-b border-slate-700 pb-2 flex justify-between items-baseline">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Morning Staging</h3>
+          <span class="text-slate-500 font-mono text-sm">9:00 – 11:00 AM</span>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Temper</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Staging</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Turkey B & Sides</div>
+          <p class="text-sm text-slate-400">Pull turkey 2 hrs before roast. Pull stuffing/mash/veg bags to take chill off.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-sky-500 shadow-lg" data-action="sous vide" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Reheat Setup</span>
+            <span class="bg-sky-500/10 text-sky-400 text-xs px-2 py-1 rounded font-bold border border-sky-500/20">Sous Vide</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Dark meat bath</div>
+          <p class="text-sm text-slate-400">Preheat bath to <strong>145°F</strong>. Reheat sealed legs/thighs for ~45 min.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-yellow-500 shadow-lg" data-action="stove" data-dishes="mashed-potatoes">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Warm</span>
+            <span class="bg-yellow-500/10 text-yellow-400 text-xs px-2 py-1 rounded font-bold border border-yellow-500/20">Stovetop</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Mash & Gravy</div>
+          <p class="text-sm text-slate-400">Gentle reheat. Add warm milk/butter to mash.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2 flex justify-between items-baseline">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Active Cooking</h3>
+          <span class="text-slate-500 font-mono text-sm">11:00 AM – 2:20 PM</span>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-orange-500 shadow-lg" data-action="oven" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Roast</span>
+            <span class="bg-orange-500/10 text-orange-400 text-xs px-2 py-1 rounded font-bold border border-orange-500/20">Oven</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Turkey B Showpiece</div>
+          <p class="text-sm text-slate-400">Butter under skin. Roast at <strong>425°F</strong> (~7 min/lb) until breast hits 160°F.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="fennel-salad">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Slice</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Salad</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Shaved Fennel Salad</div>
+          <p class="text-sm text-slate-400">Slice apple; toss with lemon/oil to prevent browning.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2 flex justify-between items-baseline">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Golden Oven Window</h3>
+          <span class="text-slate-500 font-mono text-sm">2:20 – 3:00 PM</span>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-emerald-500 shadow-lg" data-action="prep" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Rest</span>
+            <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded font-bold border border-emerald-500/20">Turkey</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Turkey B</div>
+          <p class="text-sm text-slate-400">Remove; tilt for drippings; rest 20 min tented.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-orange-500 shadow-lg" data-action="oven" data-dishes="stuffing">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Bake</span>
+            <span class="bg-orange-500/10 text-orange-400 text-xs px-2 py-1 rounded font-bold border border-orange-500/20">Oven Reset</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Stuffing</div>
+          <p class="text-sm text-slate-400"><strong>350°F</strong>. Bake covered 35 min, then uncovered 15 min.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-orange-500 shadow-lg" data-action="oven" data-dishes="seven-veg">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Broil</span>
+            <span class="bg-orange-500/10 text-orange-400 text-xs px-2 py-1 rounded font-bold border border-orange-500/20">Finish Veg</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Seven-Veg</div>
+          <p class="text-sm text-slate-400">Add fresh onion/radish. Broil 5–12 min total.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-orange-500 shadow-lg" data-action="oven" data-dishes="turkey-plan">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Broil</span>
+            <span class="bg-orange-500/10 text-orange-400 text-xs px-2 py-1 rounded font-bold border border-orange-500/20">Crisp</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Dark Meat</div>
+          <p class="text-sm text-slate-400">Pat sous vide legs dry; broil 3–5 min until crackling.</p>
+        </div>
+
+        <div class="col-span-full mt-6 mb-1 border-b border-slate-700 pb-2 flex justify-between items-baseline">
+          <h3 class="text-lg font-bold text-accent uppercase tracking-wide">Final Assembly</h3>
+          <span class="text-slate-500 font-mono text-sm">2:40 – 3:00 PM</span>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-purple-500 shadow-lg" data-action="finish" data-dishes="gravy">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Finish</span>
+            <span class="bg-purple-500/10 text-purple-400 text-xs px-2 py-1 rounded font-bold border border-purple-500/20">Gravy</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Orange–Cranberry</div>
+          <p class="text-sm text-slate-400">Add drippings, compote, OJ. Simmer.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-purple-500 shadow-lg" data-action="finish" data-dishes="sweet-potatoes">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Finish</span>
+            <span class="bg-purple-500/10 text-purple-400 text-xs px-2 py-1 rounded font-bold border border-purple-500/20">Sweet Potatoes</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Coconut–Ginger</div>
+          <p class="text-sm text-slate-400">Warm elixir; mash into potatoes; season.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-purple-500 shadow-lg" data-action="finish" data-dishes="seven-veg">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Glaze</span>
+            <span class="bg-purple-500/10 text-purple-400 text-xs px-2 py-1 rounded font-bold border border-purple-500/20">Seven-Veg</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Finish</div>
+          <p class="text-sm text-slate-400">Toss hot veg with brown butter, thyme, lemon zest.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-purple-500 shadow-lg" data-action="finish" data-dishes="fennel-salad">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Assemble</span>
+            <span class="bg-purple-500/10 text-purple-400 text-xs px-2 py-1 rounded font-bold border border-purple-500/20">Salad</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Fennel Salad</div>
+          <p class="text-sm text-slate-400">Combine all parts; dress 5-10 min before serving.</p>
+        </div>
+
+        <div class="task-card bg-slate-800 rounded-lg p-4 border-l-4 border-purple-500 shadow-lg" data-action="finish" data-dishes="general">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-slate-500 uppercase">Serve</span>
+            <span class="bg-purple-500/10 text-purple-400 text-xs px-2 py-1 rounded font-bold border border-purple-500/20">Plate</span>
+          </div>
+          <div class="font-bold text-white text-lg mb-1">Dinner</div>
+          <p class="text-sm text-slate-400">Carve Turkey B; plate sides and dark meat. Eat.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="turkey-plan" data-dish="turkey-plan" class="bg-panel border border-slate-700 rounded-xl p-5 md:p-8 shadow-2xl">
+      <div class="text-slate-400 text-xs uppercase font-bold mb-1 tracking-wider">Turkey Strategy</div>
+      <h2 class="text-2xl font-bold text-white mb-2">Turkey Plan (Two Birds)</h2>
+      <p class="text-slate-400 mb-6">All legs sous vide; one bird for leftovers (SV breasts), one for showpiece roast.</p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-slate-800 p-5 rounded-lg border border-slate-700 shadow-md">
+          <h3 class="text-sky-400 font-bold mb-3 text-lg">Dark Meat (Both)</h3>
+          <ul class="list-disc list-outside ml-4 space-y-2 text-sm text-slate-300 marker:text-slate-600">
+            <li>Season/bag all legs &amp; thighs together.</li>
+            <li>Sous vide <strong>155°F for 12–16 hrs</strong>.</li>
+            <li>Ice bath; reheat Friday.</li>
+          </ul>
+        </div>
+        <div class="bg-slate-800 p-5 rounded-lg border border-slate-700 shadow-md">
+          <h3 class="text-sky-400 font-bold mb-3 text-lg">Turkey A (Leftovers)</h3>
+          <ul class="list-disc list-outside ml-4 space-y-2 text-sm text-slate-300 marker:text-slate-600">
+            <li>Remove breasts; vac-seal separately.</li>
+            <li>Sous vide <strong>145°F for 2.5–3 hrs</strong>.</li>
+            <li>Ice bath; save for sandwiches.</li>
+          </ul>
+        </div>
+        <div class="bg-slate-800 p-5 rounded-lg border border-slate-700 shadow-md">
+          <h3 class="text-sky-400 font-bold mb-3 text-lg">Turkey B (Showpiece)</h3>
+          <ul class="list-disc list-outside ml-4 space-y-2 text-sm text-slate-300 marker:text-slate-600">
+            <li>Spatchcock; dry brine Wed/Thu.</li>
+            <li>Fri: Herb Butter; roast <strong>425°F</strong> to 160°F.</li>
+            <li>Serve roasted breast at table.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="sweet-potatoes" data-dish="sweet-potatoes" class="bg-panel border border-slate-700 rounded-xl p-5 md:p-8 shadow-2xl">
+      <div class="text-slate-400 text-xs uppercase font-bold mb-1 tracking-wider">Recipe</div>
+      <h2 class="text-2xl font-bold text-white mb-2">Creamy Coconut–Ginger Sweet Potatoes</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div class="bg-slate-800 p-5 rounded-lg border border-slate-700">
+          <h3 class="text-lg font-bold text-accent mb-3">Ingredients</h3>
+          <ul class="list-disc list-outside ml-4 space-y-1 text-sm text-slate-300 marker:text-slate-600">
+            <li>3 lbs sweet potatoes, peeled + chunks</li>
+            <li>1 cup full-fat coconut milk</li>
+            <li>2–3 tbsp grated ginger</li>
+            <li>2 tbsp butter or coconut oil</li>
+            <li>1 lime (zest + juice)</li>
+          </ul>
+        </div>
+        <div class="bg-slate-800 p-5 rounded-lg border border-slate-700">
+          <h3 class="text-lg font-bold text-accent mb-3">Steps</h3>
+          <ul class="list-disc list-outside ml-4 space-y-2 text-sm text-slate-300 marker:text-slate-600">
+            <li><strong>Tue:</strong> Bag with salt/oil. SV <strong>185°F 90 min</strong>. Chill.</li>
+            <li><strong>Fri:</strong> Warm coconut milk with ginger/lime/butter (elixir).</li>
+            <li>Warm potatoes, drain, mash with elixir.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="seven-veg" data-dish="seven-veg" class="bg-panel border border-slate-700 rounded-xl p-5 md:p-8 shadow-2xl">
+      <div class="text-slate-400 text-xs uppercase font-bold mb-1 tracking-wider">Recipe</div>
+      <h2 class="text-2xl font-bold text-white mb-2">Seven-Vegetable Orchestra</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+        <div class="bg-slate-800 p-5 rounded-lg border border-slate-700">
+            <h3 class="text-lg font-bold text-accent mb-3">Components</h3>
+            <p class="text-sm text-slate-300 mb-2"><strong>Group A:</strong> Carrots, Parsnips, Turnips</p>
+            <p class="text-sm text-slate-300 mb-2"><strong>Group B:</strong> Squash, Fennel</p>
+            <p class="text-sm text-slate-300"><strong>Fresh:</strong> Red Onion, Radishes</p>
+        </div>
+        <div class="bg-slate-800 p-5 rounded-lg border border-slate-700">
+            <h3 class="text-lg font-bold text-accent mb-3">Execution</h3>
+            <p class="text-sm text-slate-300 mb-2"><strong>SV:</strong> 185°F. Group A (60-75m), Group B (45-60m).</p>
+            <p class="text-sm text-slate-300"><strong>Fri:</strong> Broil all with fresh onion/radish. Toss with brown butter, thyme, lemon.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="mashed-potatoes" data-dish="mashed-potatoes" class="bg-panel border border-slate-700 rounded-xl p-5 md:p-8 shadow-2xl">
+      <div class="text-slate-400 text-xs uppercase font-bold mb-1 tracking-wider">Recipe</div>
+      <h2 class="text-2xl font-bold text-white mb-2">Mashed Potatoes</h2>
+      <div class="bg-slate-800 p-5 rounded-lg border border-slate-700 mt-4">
+        <ul class="list-disc list-outside ml-4 space-y-2 text-sm text-slate-300 marker:text-slate-600">
+          <li><strong>Prep (Tue):</strong> Peel, cut, store in water.</li>
+          <li><strong>Cook (Wed):</strong> Boil 15-20 min. Mash with butter, warm milk, sour cream.</li>
+          <li><strong>Fri:</strong> Reheat gently; add extra warm dairy.</li>
+        </ul>
+      </div>
+    </section>
+
+    </main>
+
+  <div class="footer-bar fixed bottom-0 left-0 right-0 h-20 bg-slate-900/90 backdrop-blur-md border-t border-slate-700 flex items-center justify-center gap-2 px-4 z-50">
+    <button class="filter-btn flex items-center justify-between gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-bold text-slate-200 min-w-[110px] transition-colors" data-dropdown="day-dd">
+      <span>Schedule</span> <span>▾</span>
+    </button>
+    <button class="filter-btn flex items-center justify-between gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-bold text-slate-200 min-w-[110px] transition-colors" data-dropdown="dish-dd">
+      <span>Dish</span> <span>▾</span>
+    </button>
+    <button class="filter-btn flex items-center justify-between gap-2 px-4 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm font-bold text-slate-200 min-w-[110px] transition-colors" data-dropdown="action-dd">
+      <span>Action</span> <span>▾</span>
+    </button>
+  </div>
+
+  <div id="day-dd" class="dropdown hidden fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 rounded-2xl p-3 shadow-2xl w-[90%] max-w-sm z-[60]">
+    <h4 class="text-slate-400 text-xs uppercase font-bold px-2 mb-2">Filter by Day</h4>
+    <div class="grid grid-cols-2 gap-2">
+      <div class="option active cursor-pointer text-center py-2 px-3 rounded-lg border border-transparent bg-sky-500/20 text-sky-400 border-sky-500 font-semibold text-sm transition-all" data-day="">All Days</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700 transition-all" data-day="tuesday">Tuesday</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700 transition-all" data-day="wednesday">Wednesday</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700 transition-all" data-day="thursday">Thursday</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700 transition-all" data-day="friday">Friday</div>
+    </div>
+  </div>
+
+  <div id="dish-dd" class="dropdown hidden fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 rounded-2xl p-3 shadow-2xl w-[90%] max-w-sm z-[60]">
+    <h4 class="text-slate-400 text-xs uppercase font-bold px-2 mb-2">Filter by Dish</h4>
+    <div class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto no-scrollbar">
+      <div class="option active cursor-pointer text-center py-2 px-3 rounded-lg border border-transparent bg-sky-500/20 text-sky-400 border-sky-500 font-semibold text-sm" data-dish="">All Dishes</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-dish="turkey-plan">Turkey Plan</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-dish="sweet-potatoes">Sweet Potatoes</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-dish="seven-veg">Seven-Veg</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-dish="mashed-potatoes">Mashed Potatoes</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-dish="stuffing">Stuffing</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-dish="gravy">Gravy</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-dish="fennel-salad">Fennel Salad</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-dish="herb-butter">Herb Butter</div>
+    </div>
+  </div>
+
+  <div id="action-dd" class="dropdown hidden fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 rounded-2xl p-3 shadow-2xl w-[90%] max-w-sm z-[60]">
+    <h4 class="text-slate-400 text-xs uppercase font-bold px-2 mb-2">Filter by Action</h4>
+    <div class="grid grid-cols-2 gap-2">
+      <div class="option active cursor-pointer text-center py-2 px-3 rounded-lg border border-transparent bg-sky-500/20 text-sky-400 border-sky-500 font-semibold text-sm" data-action="">All Actions</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-action="sous vide">Sous Vide (Blue)</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-action="prep">Prep (Green)</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-action="oven">Oven (Orange)</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-action="stove">Stove (Yellow)</div>
+      <div class="option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700" data-action="finish">Finish (Purple)</div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const state = { day: "", dish: "", action: "" };
+      const dropdowns = document.querySelectorAll(".dropdown");
+      const buttons = document.querySelectorAll(".filter-btn");
+      const recipeSections = document.querySelectorAll("section[data-dish]");
+      const scheduleGrids = document.querySelectorAll(".schedule-grid");
+      const taskCards = document.querySelectorAll(".task-card");
+      const filterKeys = ["day", "dish", "action"];
+      const defaultOptionSelector = {
+        day: '[data-day=""]',
+        dish: '[data-dish=""]',
+        action: '[data-action=""]',
+      };
+
+      // Reset style helper
+      const setActiveStyle = (el, isActive) => {
+        if (isActive) {
+          el.className = "option active cursor-pointer text-center py-2 px-3 rounded-lg border border-transparent bg-sky-500/20 text-sky-400 border-sky-500 font-semibold text-sm transition-all";
+        } else {
+          el.className = "option cursor-pointer text-center py-2 px-3 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-200 font-medium text-sm hover:bg-slate-700 transition-all";
+        }
+      }
+
+      const resetDropdown = (dropdown, key, setDefault = true) => {
+        dropdown.querySelectorAll(".option").forEach((o) => setActiveStyle(o, false));
+        if (setDefault) {
+          const def = dropdown.querySelector(defaultOptionSelector[key]);
+          if (def) setActiveStyle(def, true);
+        }
+      };
+
+      const clearOtherFilters = (activeKey) => {
+        filterKeys.forEach((key) => {
+          if (key === activeKey) return;
+          state[key] = "";
+          const dd = document.getElementById(`${key}-dd`);
+          if (dd) resetDropdown(dd, key, true);
+        });
+      };
+
+      const applyFilters = () => {
+        const { day, dish, action } = state;
+        const shownDishes = new Set();
+
+        taskCards.forEach((card) => {
+          // Parent Grid's day vs Card's day? 
+          // Note: Cards are inside a section, the grid usually has the day data, but we put data-day on cards in JS generation previously.
+          // For this static HTML version, I removed the JS generation. We rely on the section or manual attributes.
+          // The structure is: Section(id=day) -> .schedule-grid(data-day) -> .task-card
+          
+          const cardDay = card.closest('.schedule-grid').dataset.day;
+          const cardAction = card.dataset.action;
+          const cardDishes = card.dataset.dishes.split(",");
+
+          const dayOk = !day || cardDay === day;
+          const dishOk = !dish || cardDishes.includes(dish);
+          const actionOk = !action || cardAction === action;
+
+          const show = dayOk && dishOk && actionOk;
+          
+          card.style.display = show ? "block" : "none";
+          
+          if (show) {
+            cardDishes.forEach((d) => shownDishes.add(d));
+          }
+        });
+
+        // Hide group headers (col-span-full) if no siblings are visible
+        scheduleGrids.forEach((grid) => {
+          const headers = grid.querySelectorAll(".col-span-full");
+          headers.forEach((header) => {
+            let next = header.nextElementSibling;
+            let anyVisible = false;
+            while (next && !next.classList.contains("col-span-full")) {
+              if (next.style.display !== "none") { anyVisible = true; break; }
+              next = next.nextElementSibling;
+            }
+            header.style.display = anyVisible ? "flex" : "none"; // flex for flex-header, block for others
+            if(header.tagName === 'DIV' && !header.classList.contains('flex')) header.style.display = anyVisible ? "block" : "none";
+          });
+        });
+
+        // Recipes visibility
+        const hasFilter = !!(day || dish || action);
+        recipeSections.forEach((sec) => {
+          const id = sec.dataset.dish;
+          if (!hasFilter) {
+            sec.style.display = "";
+            return;
+          }
+          sec.style.display = shownDishes.has(id) ? "" : "none";
+        });
+      };
+
+      // Dropdown toggles
+      const closeAll = () => dropdowns.forEach((d) => d.classList.add("hidden"));
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const target = document.getElementById(btn.dataset.dropdown);
+          const isHidden = target.classList.contains("hidden");
+          closeAll();
+          if (isHidden) target.classList.remove("hidden");
+        });
+      });
+      document.addEventListener("click", (e) => {
+        if (e.target.closest(".filter-btn") || e.target.closest(".dropdown")) return;
+        closeAll();
+      });
+
+      // Option handlers
+      dropdowns.forEach((dd) => {
+        dd.addEventListener("click", (e) => {
+          const opt = e.target.closest(".option");
+          if (!opt) return;
+          const key = dd.id.replace("-dd", "");
+          clearOtherFilters(key);
+          resetDropdown(dd, key, false);
+          setActiveStyle(opt, true);
+          state[key] = opt.dataset[key] || "";
+          applyFilters();
+          closeAll();
+        });
+      });
+
+      applyFilters();
+    });
+  </script>
+</body>
+</html>
